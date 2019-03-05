@@ -9,52 +9,56 @@
 PROGRAM viewASCII;
 
    USES
-      Keyboard, Mouse, Video, StringUtils,
+      uLog, Video, Mouse, Keyboard, StringUtils,
       uTVideo, uTVideoImg;
 
 CONST
-   dcProgramName: string      = 'viewASCII';
-   dcProgramVersion           = $0100;
-
-   vMode: TVideoMode          = (col: 40; row: 25; color: true);
-   vMode2: TVideoMode         = (col: 80; row: 25; color: true);
-
    MouseOk: boolean           = false;
 
 VAR
-   i, j: longint;
-   x, y, mx, my, pmx, pmy: longint;
+   i,
+   j,
+   x,
+   y,
+   mx,
+   my,
+   pmx,
+   pmy: longint;
 
 LABEL
    lbl_finished;
 
 BEGIN
-  {initialize the mouse and the keyboard}
-  InitMouse();
-  MouseOk := DetectMouse > 0;
+   log.InitStd('viewASCII.log', 'viewASCII', logcREWRITE);
+   consoleLog.Close();
 
-  InitKeyboard();
+   InitKeyboard();
 
-  {initialize video}
+   {initialize video}
    tvGlobal.Initialize();
-   if(tvGlobal.error <> 0) then begin
-      writeln('Error: Failed to initialize the video driver.');
+
+   if(tvGlobal.Error <> 0) then begin
+      log.e('Failed to initialize the video driver.');
       halt(1);
    end;
 
    if(tvGlobal.DC.ChangeMode) then begin
       {set the required video mode}
-      tvGlobal.SetMode(vMode);
+      tvGlobal.SetMode(tvcM40x25T);
       if(tvGlobal.error <> 0) then begin
-         writeln('Error: Failed to set 40x25 color video mode.');
+         log.e('Failed to set 40x25 color video mode.');
 
-         tvGlobal.SetMode(vMode2);
+         tvGlobal.SetMode(tvcM80x25T);
          if(tvGlobal.error <> 0) then begin
-            writeln('Error: Failed to set 80x25 color video mode.');
+            log.e('Failed to set 80x25 color video mode.');
             halt(2);
          end;
       end;
    end;
+
+   {initialize the mouse and the keyboard}
+   InitMouse();
+   MouseOk := DetectMouse() > 0;
 
    {display the characters}
    tvCurrent.SetBkColor(0);
@@ -80,19 +84,12 @@ BEGIN
 
    tvCurrent.SetColor(15);
    {display version information}
-   tvCurrent.Write(3, 12, dcProgramName +
-         ' v' + sf(hi(dcProgramVersion)) + '.' + sf(lo(dcProgramVersion)));
-   tvCurrent.Write(3, 13, 'Copyright (c) 2009. Dejan Boras');
-
-   tvCurrent.Write(3, 15, 'This program is open source under');
-   tvCurrent.Write(3, 16, 'GNU GPLv3. See license for details.');
-
-   tvCurrent.Write(0, 24, 'Press any key to exit...');
+   tvCurrent.Write(0, 16, 'Press any key to exit...');
 
    tvCurrent.SetColor(14);
-   tvCurrent.Write(3, 21, 'Formula: # = (y*32)+x');
+   tvCurrent.Write(3, 13, 'Formula: # = (y*32)+x');
    if(not MouseOk) then
-      tvCurrent.Write(3, 22, 'Mouse device not available.');
+      tvCurrent.Write(3, 15, 'Mouse device not available.');
 
    {update the screen}
    UpdateScreen(false);
@@ -113,12 +110,13 @@ BEGIN
                x := mx - 2;
                y := my - 1;
 
-               tvCurrent.Write(3, 22, '#' + sf(y * 32 + x)+'('+sf(y) + ':' + sf(x) + ')     ');
+               tvCurrent.Write(3, 15, '#' + sf(y * 32 + x)+'('+sf(y) + ':' + sf(x) + ')     ');
             end else
-               tvCurrent.Write(3, 22, '?             ');
+               tvCurrent.Write(3, 15, '?             ');
 
             UpdateScreen(false);
          end;
+
          if(GetMouseButtons() <> 0) then
             goto lbl_finished;
       end;
