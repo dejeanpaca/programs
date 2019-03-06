@@ -31,6 +31,8 @@ BEGIN
    log.InitStd('viewASCII.log', 'viewASCII', logcREWRITE);
    consoleLog.Close();
 
+   InitKeyboard();
+
    {initialize the mouse and the keyboard}
    InitMouse();
    MouseOk := DetectMouse() > 0;
@@ -101,7 +103,7 @@ BEGIN
    {done}
    repeat
       if(MouseOk) then begin
-(*         mx := GetMouseX();
+         mx := GetMouseX();
          my := GetMouseY();
 
          if(mx <> pmx) or (my <> pmy) then begin
@@ -112,12 +114,12 @@ BEGIN
                x := mx - 2;
                y := my - 1;
 
-               //tvCurrent.Write(3, 15, '#' + sf(y * 32 + x)+'('+sf(y) + ':' + sf(x) + ')     ');
+               tvCurrent.Write(3, 15, '#' + sf(y * 32 + x)+'('+sf(y) + ':' + sf(x) + ')     ');
             end else
-               //tvCurrent.Write(3, 15, '?             ');
+               tvCurrent.Write(3, 15, '?             ');
 
             UpdateScreen(false);
-         end;*)
+         end;
 
          if(GetMouseButtons() <> 0) then begin
             log.i('user quit');
