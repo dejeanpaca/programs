@@ -9,13 +9,12 @@
 PROGRAM viewASCII;
 
    USES
-      uLog, Video, Mouse, Keyboard, StringUtils,
+      keyboard, video, mouse, uLog, StringUtils,
       uTVideo, uTVideoImg;
 
-CONST
-   MouseOk: boolean           = false;
-
 VAR
+   MouseOk: boolean;
+
    i,
    j,
    x,
@@ -32,7 +31,11 @@ BEGIN
    log.InitStd('viewASCII.log', 'viewASCII', logcREWRITE);
    consoleLog.Close();
 
-   InitKeyboard();
+   {initialize the mouse and the keyboard}
+   InitMouse();
+   MouseOk := DetectMouse() > 0;
+
+   log.i('mouse ok: ' + sf(MouseOk));
 
    {initialize video}
    tvGlobal.Initialize();
@@ -55,10 +58,6 @@ BEGIN
          end;
       end;
    end;
-
-   {initialize the mouse and the keyboard}
-   InitMouse();
-   MouseOk := DetectMouse() > 0;
 
    {display the characters}
    tvCurrent.SetBkColor(0);
@@ -97,11 +96,14 @@ BEGIN
    pmx := 0;
    pmy := 0;
 
+   log.i('start');
+
    {done}
    repeat
       if(MouseOk) then begin
-         mx := GetMouseX();
+(*         mx := GetMouseX();
          my := GetMouseY();
+
          if(mx <> pmx) or (my <> pmy) then begin
             pmx := mx;
             pmy := my;
@@ -110,19 +112,24 @@ BEGIN
                x := mx - 2;
                y := my - 1;
 
-               tvCurrent.Write(3, 15, '#' + sf(y * 32 + x)+'('+sf(y) + ':' + sf(x) + ')     ');
+               //tvCurrent.Write(3, 15, '#' + sf(y * 32 + x)+'('+sf(y) + ':' + sf(x) + ')     ');
             end else
-               tvCurrent.Write(3, 15, '?             ');
+               //tvCurrent.Write(3, 15, '?             ');
 
             UpdateScreen(false);
-         end;
+         end;*)
 
-         if(GetMouseButtons() <> 0) then
+         if(GetMouseButtons() <> 0) then begin
+            log.i('user quit');
+
             goto lbl_finished;
+         end;
       end;
-   until (Keypressed() = true);
+   until (Keypressed());
 
 lbl_finished:
+
+   log.i('done');
 
    {done}
    tvCurrent.Clear();
@@ -131,4 +138,3 @@ lbl_finished:
    DoneMouse();
    tvGlobal.Deinitialize();
 END.
-
