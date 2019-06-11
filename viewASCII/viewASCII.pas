@@ -10,7 +10,7 @@ PROGRAM viewASCII;
 
    USES
       keyboard, video, mouse, uLog, StringUtils,
-      uTVideo, uTVideoImg;
+      uTVideo;
 
 VAR
    MouseOk: boolean;
@@ -23,9 +23,6 @@ VAR
    my,
    pmx,
    pmy: longint;
-
-LABEL
-   lbl_finished;
 
 BEGIN
    log.InitStd('viewASCII.log', 'viewASCII', logcREWRITE);
@@ -88,7 +85,7 @@ BEGIN
    tvCurrent.Write(0, 16, 'Press any key to exit...');
 
    tvCurrent.SetColor(14);
-   tvCurrent.Write(3, 13, 'Formula: # = (y*32)+x');
+   tvCurrent.Write(3, 13, 'Formula: # = (y * 32) + x');
    if(not MouseOk) then
       tvCurrent.Write(3, 15, 'Mouse device not available.');
 
@@ -114,7 +111,7 @@ BEGIN
                x := mx - 2;
                y := my - 1;
 
-               tvCurrent.Write(3, 15, '#' + sf(y * 32 + x)+'('+sf(y) + ':' + sf(x) + ')     ');
+               tvCurrent.Write(3, 15, '#' + sf(y * 32 + x) + '(' + sf(y) + ':' + sf(x) + ')     ');
             end else
                tvCurrent.Write(3, 15, '?             ');
 
@@ -124,12 +121,10 @@ BEGIN
          if(GetMouseButtons() <> 0) then begin
             log.i('user quit');
 
-            goto lbl_finished;
+            break;
          end;
       end;
    until (Keypressed());
-
-lbl_finished:
 
    log.i('done');
 
