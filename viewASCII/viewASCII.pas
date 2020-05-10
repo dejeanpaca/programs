@@ -9,32 +9,29 @@
 PROGRAM viewASCII;
 
    USES
-      keyboard, video, mouse, uLog, StringUtils,
-      uTVideo;
+      sysutils,
+      uStd, uLog, StringUtils,
+      uTVideo, keyboard, mouse, video;
 
 VAR
    MouseOk: boolean;
+   m: TMouseEvent;
 
    i,
    j,
    x,
    y,
-   mx,
-   my,
    pmx,
    pmy: longint;
 
 BEGIN
    log.InitStd('viewASCII.log', 'viewASCII', logcREWRITE);
-   consoleLog.Close();
 
    InitKeyboard();
 
    {initialize the mouse and the keyboard}
    InitMouse();
    MouseOk := DetectMouse() > 0;
-
-   log.i('mouse ok: ' + sf(MouseOk));
 
    {initialize video}
    tvGlobal.Initialize();
@@ -43,6 +40,8 @@ BEGIN
       log.e('Failed to initialize the video driver.');
       halt(1);
    end;
+
+   video.SetCursorType(crHidden);
 
    if(tvGlobal.DC.ChangeMode) then begin
       {set the required video mode}
@@ -86,51 +85,53 @@ BEGIN
 
    tvCurrent.SetColor(14);
    tvCurrent.Write(3, 13, 'Formula: # = (y * 32) + x');
+
    if(not MouseOk) then
       tvCurrent.Write(3, 15, 'Mouse device not available.');
 
    {update the screen}
-   UpdateScreen(false);
+   tvCurrent.Update();
 
    pmx := 0;
    pmy := 0;
 
-   log.i('start');
+   Zeroout(m, SizeOf(m));
 
    {done}
    repeat
       if(MouseOk) then begin
-         mx := GetMouseX();
-         my := GetMouseY();
+         GetMouseEvent(m);
 
-         if(mx <> pmx) or (my <> pmy) then begin
-            pmx := mx;
-            pmy := my;
+         if(m.x <> pmx) or (m.y <> pmy) then begin
+            pmx := m.x;
+            pmy := m.y;
 
-            if(my > 0) and (my < 9) and (mx > 1) and (mx < 34) then begin
-               x := mx - 2;
-               y := my - 1;
+            if(m.y > 0) and (m.y < 9) and (m.x > 1) and (m.x < 34) then begin
+               x := m.x - 2;
+               y := m.y - 1;
 
                tvCurrent.Write(3, 15, '#' + sf(y * 32 + x) + '(' + sf(y) + ':' + sf(x) + ')     ');
             end else
                tvCurrent.Write(3, 15, '?             ');
 
-            UpdateScreen(false);
+            tvCurrent.Write(3, 14, sf(m.x) + 'x' + sf(m.y) + '     ');
+            tvCurrent.Update();
          end;
 
-         if(GetMouseButtons() <> 0) then begin
+         if(m.buttons <> 0) then begin
             log.i('user quit');
 
             break;
          end;
       end;
-   until (Keypressed());
 
-   log.i('done');
+      Sleep(5);
+   until (Keypressed());
 
    {done}
    tvCurrent.Clear();
-   UpdateScreen(false);
+   tvCurrent.Update();
+
    DoneKeyboard();
    DoneMouse();
    tvGlobal.Deinitialize();
